@@ -27,3 +27,7 @@ resource "aws_instance" "cassandra" {
 output "instance_ip" {
   value = "${aws_instance.cassandra.public_ip}"
 }
+
+output "wait_for" {
+  value = "${aws_instance.cassandra.public_ip}_${var.wait_for}"
+}

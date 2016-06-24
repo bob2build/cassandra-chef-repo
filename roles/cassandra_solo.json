@@ -1,5 +1,5 @@
 {
-  "name": "cassandra_single",
+  "name": "cassandra_solo",
   "description": "Role to install cassandra servers",
   "json_class": "Chef::Role",
   "default_attributes": {
@@ -9,7 +9,7 @@
     "cassandra": {
       "seed_discovery": {
         "use_chef_search": true,
-        "search_role": "cassandra_single"
+        "search_role": "cassandra_solo"
       },
       "config": {
         "cluster_name": "solo_cluster"

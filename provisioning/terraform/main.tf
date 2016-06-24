@@ -28,46 +28,84 @@ resource "aws_security_group" "cassandra" {
   }
 }
 
-module "cluster_node_1" {
-  source = "./modules/instance/amzlinux"
-  sshkey_name = "cassandra"
-  security_groups = "${aws_security_group.cassandra.name}"
-  sshkey_pem = "./data/cassandra.pem"
-  sshkey_name = "cassandra"
-  chef_role = "cassandra_cluster"
-  chef_node = "cassandra_cluster_node_1"
-  chef_server_url = "${var.chef_server_url}"
-  chef_validator_name = "${var.chef_validator_name}"
-  chef_validator_pem = "${var.chef_validator_pem}"
-  wait_for = "self"
+resource "aws_instance" "cassandra_cluster_node_1" {
+  instance_type = "t2.micro"
+  ami = "ami-f303fb93"
+  key_name = "cassandra"
+  security_groups = ["${aws_security_group.cassandra.name}"]
+
+  provisioner "chef"  {
+    connection {
+      user = "ec2-user"
+      private_key = "${file("./data/cassandra.pem")}"
+    }
+
+    attributes_json = <<EOF
+    {
+    }
+    EOF
+    environment = "_default"
+    run_list = ["role[cassandra_cluster]"]
+    node_name = "cassandra_cluster_node_1"
+    server_url = "${var.chef_server_url}"
+    validation_client_name = "${var.chef_validator_name}"
+    validation_key = "${file(var.chef_validator_pem)}"
+    version = "12.0.1"
+  }
 }
 
-module "cluster_node_2" {
-  source = "./modules/instance/amzlinux"
-  sshkey_name = "cassandra"
-  security_groups = "${aws_security_group.cassandra.name}"
-  sshkey_pem = "./data/cassandra.pem"
-  sshkey_name = "cassandra"
-  chef_role = "cassandra_cluster"
-  chef_node = "cassandra_cluster_node_2"
-  chef_server_url = "${var.chef_server_url}"
-  chef_validator_name = "${var.chef_validator_name}"
-  chef_validator_pem = "${var.chef_validator_pem}"
-  wait_for = "${module.cluster_node_1.instance_ip}"
+resource "aws_instance" "cassandra_cluster_node_2" {
+  depends_on = ["aws_instance.cassandra_cluster_node_1"]
+  instance_type = "t2.micro"
+  ami = "ami-f303fb93"
+  key_name = "cassandra"
+  security_groups = ["${aws_security_group.cassandra.name}"]
+
+  provisioner "chef"  {
+    connection {
+      user = "ec2-user"
+      private_key = "${file("./data/cassandra.pem")}"
+    }
+
+    attributes_json = <<EOF
+    {
+    }
+    EOF
+    environment = "_default"
+    run_list = ["role[cassandra_cluster]"]
+    node_name = "cassandra_cluster_node_2"
+    server_url = "${var.chef_server_url}"
+    validation_client_name = "${var.chef_validator_name}"
+    validation_key = "${file(var.chef_validator_pem)}"
+    version = "12.0.1"
+  }
 }
 
-module "cluster_node_3" {
-  source = "./modules/instance/amzlinux"
-  sshkey_name = "cassandra"
-  security_groups = "${aws_security_group.cassandra.name}"
-  sshkey_pem = "./data/cassandra.pem"
-  sshkey_name = "cassandra"
-  chef_role = "cassandra_cluster"
-  chef_node = "cassandra_cluster_node_3"
-  chef_server_url = "${var.chef_server_url}"
-  chef_validator_name = "${var.chef_validator_name}"
-  chef_validator_pem = "${var.chef_validator_pem}"
-  wait_for = "${module.cluster_node_2.instance_ip}"
+resource "aws_instance" "cassandra_cluster_node_3" {
+  depends_on = ["aws_instance.cassandra_cluster_node_2"]
+  instance_type = "t2.micro"
+  ami = "ami-f303fb93"
+  key_name = "cassandra"
+  security_groups = ["${aws_security_group.cassandra.name}"]
+
+  provisioner "chef"  {
+    connection {
+      user = "ec2-user"
+      private_key = "${file("./data/cassandra.pem")}"
+    }
+
+    attributes_json = <<EOF
+    {
+    }
+    EOF
+    environment = "_default"
+    run_list = ["role[cassandra_cluster]"]
+    node_name = "cassandra_cluster_node_3"
+    server_url = "${var.chef_server_url}"
+    validation_client_name = "${var.chef_validator_name}"
+    validation_key = "${file(var.chef_validator_pem)}"
+    version = "12.0.1"
+  }
 }
 
 module "cluster_solo" {
