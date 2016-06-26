@@ -1,5 +1,5 @@
 resource "aws_instance" "cassandra" {
-  instance_type = "t2.micro"
+  instance_type = "t2.small"
   ami = "ami-f303fb93"
   key_name = "${var.sshkey_name}"
   security_groups = ["${split(",", var.security_groups)}"]

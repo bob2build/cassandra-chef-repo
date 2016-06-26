@@ -28,8 +28,8 @@ resource "aws_security_group" "cassandra" {
   }
 }
 
-resource "aws_instance" "cassandra_cluster_node_1" {
-  instance_type = "t2.micro"
+resource "aws_instance" "opscenter" {
+  instance_type = "t2.medium"
   ami = "ami-f303fb93"
   key_name = "cassandra"
   security_groups = ["${aws_security_group.cassandra.name}"]
@@ -40,10 +40,31 @@ resource "aws_instance" "cassandra_cluster_node_1" {
       private_key = "${file("./data/cassandra.pem")}"
     }
 
-    attributes_json = <<EOF
-    {
+    attributes_json = "{}"
+    environment = "_default"
+    run_list = ["role[cassandra_opscenter]"]
+    node_name = "cassandra_opscenter"
+    server_url = "${var.chef_server_url}"
+    validation_client_name = "${var.chef_validator_name}"
+    validation_key = "${file(var.chef_validator_pem)}"
+    version = "12.0.1"
+  }
+}
+
+resource "aws_instance" "cassandra_cluster_node_1" {
+  depends_on = ["aws_instance.opscenter"]
+  instance_type = "t2.small"
+  ami = "ami-f303fb93"
+  key_name = "cassandra"
+  security_groups = ["${aws_security_group.cassandra.name}"]
+
+  provisioner "chef"  {
+    connection {
+      user = "ec2-user"
+      private_key = "${file("./data/cassandra.pem")}"
     }
-    EOF
+
+    attributes_json = "{}"
     environment = "_default"
     run_list = ["role[cassandra_cluster]"]
     node_name = "cassandra_cluster_node_1"
@@ -56,7 +77,7 @@ resource "aws_instance" "cassandra_cluster_node_1" {
 
 resource "aws_instance" "cassandra_cluster_node_2" {
   depends_on = ["aws_instance.cassandra_cluster_node_1"]
-  instance_type = "t2.micro"
+  instance_type = "t2.small"
   ami = "ami-f303fb93"
   key_name = "cassandra"
   security_groups = ["${aws_security_group.cassandra.name}"]
@@ -67,10 +88,7 @@ resource "aws_instance" "cassandra_cluster_node_2" {
       private_key = "${file("./data/cassandra.pem")}"
     }
 
-    attributes_json = <<EOF
-    {
-    }
-    EOF
+    attributes_json = "{}"
     environment = "_default"
     run_list = ["role[cassandra_cluster]"]
     node_name = "cassandra_cluster_node_2"
@@ -83,7 +101,7 @@ resource "aws_instance" "cassandra_cluster_node_2" {
 
 resource "aws_instance" "cassandra_cluster_node_3" {
   depends_on = ["aws_instance.cassandra_cluster_node_2"]
-  instance_type = "t2.micro"
+  instance_type = "t2.small"
   ami = "ami-f303fb93"
   key_name = "cassandra"
   security_groups = ["${aws_security_group.cassandra.name}"]
@@ -94,10 +112,7 @@ resource "aws_instance" "cassandra_cluster_node_3" {
       private_key = "${file("./data/cassandra.pem")}"
     }
 
-    attributes_json = <<EOF
-    {
-    }
-    EOF
+    attributes_json = "{}"
     environment = "_default"
     run_list = ["role[cassandra_cluster]"]
     node_name = "cassandra_cluster_node_3"

@@ -17,6 +17,7 @@ gem install bundler
 bundle install
 knife role from file roles/cassandra_cluster.json
 knife role from file roles/cassandra_solo.json
+knife role from file roles/opscenter_server.json
 berks install
 berks upload
 cd provisioning/terraform
@@ -25,3 +26,8 @@ terraform get
 terraform plan # Just to preview what changes are to be applied
 terraform apply
 ```
+
+## TODO
+* Add support for creating sample schema and uploading data
+* Backup cassandra data
+* Restore cassandra data

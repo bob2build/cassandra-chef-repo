@@ -1,0 +1,17 @@
+{
+  "name": "cassandra_opscenter",
+  "description": "Role to install cassandra servers",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+
+  },
+  "override_attributes": {
+  },
+  "chef_type": "role",
+  "run_list": [
+    "recipe[cassandra-dse::opscenter_server]"
+  ],
+  "env_run_lists": {
+
+  }
+}

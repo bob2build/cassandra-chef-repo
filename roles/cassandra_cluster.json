@@ -13,12 +13,18 @@
       },
       "config": {
         "cluster_name": "multinode_cluster"
+      },
+      "opscenter": {
+        "agent": {
+          "server_role": "cassandra_opscenter"
+        }
       }
     }
   },
   "chef_type": "role",
   "run_list": [
-    "recipe[cassandra-dse::default]"
+    "recipe[cassandra-dse::default]",
+    "recipe[cassandra-dse::opscenter_agent_datastax]"
   ],
   "env_run_lists": {
 
