@@ -109,8 +109,84 @@ count
 cqlsh:ycsb> quit;
 ```
 
-The following commands
+Backuping up cassandra is rather simple. We need to run the nodetool snapshot command in each of the node.
+
+Use pssh or any other ssh utilities to run the following command on all nodes
+```
+nodetool snapshot -t migration ycsb
+```
+This would create snapshots of keyspace ycsb at /var/lib/cassandra/data/ycsb/usertable-\*/snapshots/migration/
+
+Sample setup and execution using PSSH
+Create ~/.ssh/config file with the following content
+```
+Host cassandra_solo
+  User ec2-user
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+  HostName ec2-52-41-157-119.us-west-2.compute.amazonaws.com
+  IdentityFile ~/.secrets/sshkeys/cassandra.pem
+Host cassandra_1
+  User ec2-user
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+  HostName ec2-52-34-113-96.us-west-2.compute.amazonaws.com
+  IdentityFile ~/.secrets/sshkeys/cassandra.pem
+Host cassandra_2
+  User ec2-user
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+  HostName ec2-52-33-146-143.us-west-2.compute.amazonaws.com
+  IdentityFile ~/.secrets/sshkeys/cassandra.pem
+Host cassandra_3
+  User ec2-user
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+  HostName ec2-52-32-54-40.us-west-2.compute.amazonaws.com
+  IdentityFile ~/.secrets/sshkeys/cassandra.pem
+Host opscenter
+  User ec2-user
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+  HostName ec2-52-25-69-0.us-west-2.compute.amazonaws.com
+  IdentityFile ~/.secrets/sshkeys/cassandra.pem
+```
+
+Change the hostnames and identity files as needed. Create a cluster_hosts.txt file which contains
+```
+cassandra_1
+cassandra_2
+cassandra_3
+```
+
+Install PSSH
+```
+sudo yum install python-pip
+sudo pip install pssh
+```
+
+Run backup on all nodes of the cluster
+
+```
+pssh -h cluster_hosts.txt -i "nodetool snapshot -t migration ycsb; tar cvf migration.tar.gz /var/lib/cassandra/data/ycsb/usertable-*/snapshots/migration"
+pslurp -h cluster_hosts.txt /home/ec2-user/migration.tar.gz .
+```
+The file will be downloaded to cassandr_1/migration.tar.gz, cassandr_3/migration.tar.gz, cassandr_3/migration.tar.gz
+
+To clear backup folders
+```
+pssh -h cluster_hosts.txt -i "nodetool -h localhost -p 7199 clearsnapshot"
+```
+
+Retrieve the tokens from the cluster by doing ssh on to the machine
+```
+ssh cassandra_1
+IPADDR=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`; nodetool ring | grep $IPADDR | awk '{print $NF ","}' | xargs
+ssh cassandra_2
+IPADDR=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`; nodetool ring | grep $IPADDR | awk '{print $NF ","}' | xargs
+ssh cassandra_3
+IPADDR=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`; nodetool ring | grep $IPADDR | awk '{print $NF ","}' | xargs
+```
 
 ## TODO
-* Backup cassandra data from 3 Node cluster
 * Restore cassandra data to single Node cluster
