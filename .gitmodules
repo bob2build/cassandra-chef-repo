@@ -1,3 +1,0 @@
-[submodule "helper_submodules/cassandra-loader"]
-	path = helper_submodules/cassandra-loader
-	url = git@github.com:brianmhess/cassandra-loader.git
